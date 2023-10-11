@@ -63,9 +63,11 @@ Complete a month cost analysis of each Azure resource to give an estimate total 
 
 | Azure Resource | Service Tier | Monthly Cost |
 | ------------ | ------------ | ------------ |
-| *Azure Postgres Database* |     |              |
-| *Azure Service Bus*   |         |              |
-| ...                   |         |              |
+| *Azure Postgres Database* |   Single Server - Basic - 1 vCore - 21 GB  |    $34.58        |
+| *Azure Service Bus*       |   Basic - 1 Million                        |    $0.5          |
+| *Azure Function App*      |   1 Million call - 5000 ms time            |    $3.60         |
+| *Azure Web App*           |   Free                                     |    Free          |
+| Total                     |                                            |    $38.23        |
 
 ## Architecture Explanation
-This is a placeholder section where you can provide an explanation and reasoning for your architecture selection for both the Azure Web App and Azure Function.
+In order to efficiently handle the sending of emails in the background, it is necessary to separate it from the main web application. The web app should only handle listing and queuing tasks, which can be done using the Free Tier since the web traffic is not very high. The cost of sending emails will depend on factors such as the number of attendees and how many emails are sent, which may increase the monthly cost due to longer execution times. However, using Azure Function App is a cost-effective solution that allows the web app to have more resources without incurring high expenses.
