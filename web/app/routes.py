@@ -5,6 +5,7 @@ from flask import render_template, session, request, redirect, url_for, flash, m
 from azure.servicebus import Message
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from azure.servicebus import ServiceBusMessage
 import logging
 
 @app.route('/')
@@ -67,25 +68,13 @@ def notification():
             db.session.add(notification)
             db.session.commit()
 
-            # Call servicebus queue_client to enqueue notification ID
-            notification_id = notification.id
-            msg = Message(str(notification_id))
-            queue_client.send(msg)
             ##################################################
             ## Refactor This logic into an Azure Function
             ## Code below will be replaced by a message queue
             #################################################
             
-            attendees = Attendee.query.all()
-
-            for attendee in attendees:
-                subject = '{}: {}'.format(attendee.first_name, notification.subject)
-                send_email(attendee.email, subject, notification.message)
-
-            notification.completed_date = datetime.utcnow()
-            notification.status = 'Notified {} attendees'.format(len(attendees))
-            db.session.commit()
-            
+            message  = ServiceBusMessage(notification.message)
+            queue_client.send(message)
             #################################################
             ## END of TODO
             #################################################
