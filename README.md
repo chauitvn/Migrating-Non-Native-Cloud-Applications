@@ -70,4 +70,16 @@ Complete a month cost analysis of each Azure resource to give an estimate total 
 | Total                     |                                            |    $38.23        |
 
 ## Architecture Explanation
-In order to efficiently handle the sending of emails in the background, it is necessary to separate it from the main web application. The web app should only handle listing and queuing tasks, which can be done using the Free Tier since the web traffic is not very high. The cost of sending emails will depend on factors such as the number of attendees and how many emails are sent, which may increase the monthly cost due to longer execution times. However, using Azure Function App is a cost-effective solution that allows the web app to have more resources without incurring high expenses.
+1. Scenario
+- If we are triggering mail through the web app, if there are 1000 attendees the user must wait on the notification page until all attendees are notified due to this timeout issues can easily occur. 
+- In order to efficiently handle the sending of emails in the background, it is necessary to separate it from the main web application. The web app should only handle listing and queuing tasks, which can be done using the Free Tier since the web traffic is not very high.
+- The cost of sending emails will depend on factors such as the number of attendees and how many emails are sent, which may increase the monthly cost due to longer execution times. However, using Azure Function App is a cost-effective solution that allows the web app to have more resources without incurring high expenses.
+2. Drawbacks: 
+The previous implementation of the application had the following pain points:
+- The web application is not scalable to handle user load at peak
+- When the admin sends out notifications, it's currently taking a long time because it's looping through all attendees, resulting in some HTTP timeout exceptions
+- The current architecture is not cost-effective
+3. Advantages
+- Migrating the existing web app to an Azure App Service takes cares of scaling constraint, improves operation cost efficiency
+- Migrating PostgresSQL to scalable Azure database services allow developers to focus on database structures and operations instead of applying security or update patches. The $36.36 monthly cost on the Basic tier is more than offset by the cost savings gained.
+- Through the migration to a microservice architecture and refactoring the notification logic to an Azure Function via a service bus queue message, the different components of the web application are decoupled. This makes it more scalable and sending out of notifications does not lead to HTTP timeout exceptions anymore.
