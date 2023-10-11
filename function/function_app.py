@@ -1,14 +1,16 @@
-import azure.functions as func
 import logging
+import azure.functions as func
 import psycopg2
+import os
 from datetime import datetime
+from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 app = func.FunctionApp()
-@app.service_bus_queue_trigger(arg_name="azservicebus", queue_name="notificationqueue",
-                               connection="notificationqueue") 
-def sendnotification(azservicebus: func.ServiceBusMessage):
-    notification_id = int(azservicebus.get_body().decode('utf-8'))
+@app.service_bus_queue_trigger(arg_name="msg", queue_name="notificationqueue",
+                               connection="BusConnection") 
+def sendnotification(msg: func.ServiceBusMessage):
+    notification_id = int(msg.get_body().decode('utf-8'))
     logging.info('Python ServiceBus Queue trigger processed a message: %s', notification_id)
 
     # get connection to database

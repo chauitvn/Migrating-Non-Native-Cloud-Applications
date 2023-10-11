@@ -67,10 +67,15 @@ def notification():
             db.session.add(notification)
             db.session.commit()
 
+            # Call servicebus queue_client to enqueue notification ID
+            notification_id = notification.id
+            msg = Message(str(notification_id))
+            queue_client.send(msg)
             ##################################################
-            ## TODO: Refactor This logic into an Azure Function
+            ## Refactor This logic into an Azure Function
             ## Code below will be replaced by a message queue
             #################################################
+            
             attendees = Attendee.query.all()
 
             for attendee in attendees:
@@ -80,8 +85,7 @@ def notification():
             notification.completed_date = datetime.utcnow()
             notification.status = 'Notified {} attendees'.format(len(attendees))
             db.session.commit()
-            # TODO Call servicebus queue_client to enqueue notification ID
-
+            
             #################################################
             ## END of TODO
             #################################################
