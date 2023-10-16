@@ -45,7 +45,9 @@ def registration():
 
 @app.route('/Attendees')
 def attendees():
+    logging.info('Start to get all Attendees')
     attendees = Attendee.query.order_by(Attendee.submitted_date).all()
+    logging.info('All Attendees have been got')
     return render_template('attendees.html', attendees=attendees)
 
 
