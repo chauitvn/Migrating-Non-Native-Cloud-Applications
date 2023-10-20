@@ -23,21 +23,35 @@ def sendnotification(msg: func.ServiceBusMessage):
     
     try:
         # get notification message and subject from database using the notification_id
-        notification_query =  cursor.execute("SELECT message, subject FROM notification WHERE id = %s;", (notification_id,))
-        
+        cursor.execute("SELECT subject, message FROM notification WHERE id = %s;", (notification_id,))
+        notification = cursor.fetchone()
+        # get notification message and subject from database using the notification_id
+        notification_subject = notification[0]
+        notification_message = notification[1]
+
         # get attendees email and name
         cursor.execute("SELECT first_name, last_name, email FROM attendee;")
         attendees = cursor.fetchall()
         
         # loop through each attendee and send an email with a personalized subject
         for attendee in attendees:
-            Mail('{}, {}, {}'.format({'admin@techconf.com'}, {attendee[2]}, {notification_query}))
+            attendee_first_name = attendee[0]
+            attendee_email = attendee[1]
+            updated_subject = '{}: {}'.format(attendee_first_name, notification_subject)
+            email = Mail(
+                from_email=os.environ.get('ADMIN_EMAIL_ADDRESS'),
+                to_emails=attendee_email,
+                subject=updated_subject,
+                plain_text_content=notification_message)
+            
+            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            sg.send(email)
     
         notification_completed_date =  datetime.utcnow()
         notification_status = 'Notified {} attendees'.format(len(attendees))
 
         # update the notification table by setting the completed date and updating the status with the total number of attendees notified
-        cursor.execute("UPDATE notification SET completed_date = %s, status = %s WHERE id = %s;", (notification_completed_date, notification_status, notification_id,))
+        cursor.execute("UPDATE notification SET completed_date = %s, status = %s WHERE id = %s;", (notification_completed_date, notification_status, notification_id))
         db_connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         logging.error(error)
