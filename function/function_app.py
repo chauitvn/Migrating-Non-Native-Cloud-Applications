@@ -14,7 +14,11 @@ def sendnotification(msg: func.ServiceBusMessage):
     logging.info('Python ServiceBus Queue trigger processed a message: %s', notification_id)
 
     # get connection to database
-    db_connection = psycopg2.connect(db_name="techconfdb", user="mig_account@migration-project-server01", password="Pass@word1", host="migration-project-server01.postgres.database.azure.com")
+    db_connection = psycopg2.connect(database="techconfdb", 
+                                     user="mig_account@migration-project-server01", 
+                                     password="Pass@word1", 
+                                     port="5432",
+                                     host="migration-project-server01.postgres.database.azure.com")
     cursor = db_connection.cursor()
     
     try:
